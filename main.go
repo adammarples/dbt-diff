@@ -9,6 +9,8 @@ import (
 	"github.com/adammarples/dbt-diff/internal/dbt"
 )
 
+const version = "0.4.0"
+
 func main() {
 	if len(os.Args) < 2 {
 		printUsage()
@@ -17,9 +19,13 @@ func main() {
 
 	command := os.Args[1]
 
-	// Handle help commands
+	// Handle help and version commands
 	if command == "help" || command == "-h" || command == "--help" {
 		printUsage()
+		return
+	}
+	if command == "version" || command == "-v" || command == "--version" {
+		fmt.Printf("dbt-diff version %s\n", version)
 		return
 	}
 
@@ -59,11 +65,12 @@ func main() {
 }
 
 func printUsage() {
-	fmt.Println("dbt-diff - Compare and build dbt project changes")
+	fmt.Printf("dbt-diff v%s - Compare and build dbt project changes\n", version)
 	fmt.Println()
 	fmt.Println("Usage:")
 	fmt.Println("  dbt-diff build [flags]       Build models that changed compared to origin/main")
 	fmt.Println("  dbt-diff markdown [flags]    Generate SQL snippets for inspecting changed models")
+	fmt.Println("  dbt-diff version             Show version information")
 	fmt.Println("  dbt-diff help                Show this help message")
 	fmt.Println()
 	fmt.Println("Flags:")
