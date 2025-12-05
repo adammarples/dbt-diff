@@ -107,3 +107,26 @@ func (g *Operations) StashExists(stashName string) (bool, error) {
 func (g *Operations) GetStashName(branch, diffHash string) string {
 	return fmt.Sprintf("dbt-diff/%s/%s", branch, diffHash)
 }
+
+// IsBehindOriginMain checks if current branch is behind origin/main
+func (g *Operations) IsBehindOriginMain() (bool, error) {
+	cmd := exec.Command("git", "rev-list", "--count", "HEAD..origin/main")
+	cmd.Dir = g.workDir
+	output, err := cmd.Output()
+	if err != nil {
+		return false, fmt.Errorf("failed to check if behind: %w", err)
+	}
+
+	count := strings.TrimSpace(string(output))
+	return count != "0", nil
+}
+
+// Rebase rebases current branch onto the given ref
+func (g *Operations) Rebase(ref string) error {
+	cmd := exec.Command("git", "rebase", ref)
+	cmd.Dir = g.workDir
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to rebase onto %s: %w", ref, err)
+	}
+	return nil
+}

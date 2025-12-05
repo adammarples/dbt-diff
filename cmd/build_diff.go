@@ -68,6 +68,30 @@ func BuildDiff() error {
 		return err
 	}
 
+	// Check if behind origin/main
+	behind, err := gitOps.IsBehindOriginMain()
+	if err != nil {
+		cleanup()
+		return err
+	}
+
+	if behind {
+		fmt.Println("⚠️  Your branch is behind origin/main")
+		fmt.Print("Would you like to rebase onto origin/main before continuing? (y/N): ")
+
+		var response string
+		fmt.Scanln(&response)
+
+		if response == "y" || response == "Y" {
+			fmt.Println("🔄 Rebasing onto origin/main...")
+			if err := gitOps.Rebase("origin/main"); err != nil {
+				cleanup()
+				return fmt.Errorf("rebase failed: %w - please resolve conflicts and run again", err)
+			}
+			fmt.Println("✅ Rebase complete")
+		}
+	}
+
 	// Get main SHA
 	mainSha, err := gitOps.GetShortSHA()
 	if err != nil {
