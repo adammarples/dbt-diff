@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"dbt-diff/internal/dbt"
-	"dbt-diff/internal/git"
-	"dbt-diff/internal/state"
+	"github.com/adammarples/dbt-diff/internal/dbt"
+	"github.com/adammarples/dbt-diff/internal/git"
+	"github.com/adammarples/dbt-diff/internal/state"
 	"fmt"
 	"os"
 )

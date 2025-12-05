@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"dbt-diff/internal/dbt"
+	"github.com/adammarples/dbt-diff/internal/dbt"
 	"fmt"
 	"os"
 )

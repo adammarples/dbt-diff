@@ -1,7 +1,7 @@
 package main
 
 import (
-	"dbt-diff/cmd"
+	"github.com/adammarples/dbt-diff/cmd"
 	"fmt"
 	"os"
 )
