@@ -62,6 +62,11 @@ sudo mv dbt-diff /usr/local/bin/
 > dbt-diff build
 ```
 Run and test only the models that you've changed from your main branch
+
+```bash
+22:20:29  1 of 1 START sql table model main.customers .................................... [RUN]
+22:20:29  1 of 1 OK created sql table model main.customers ............................... [OK in 0.08s]
+```
 <details>
 <summary>Example</summary>
 
@@ -112,8 +117,15 @@ This command:
 ```bash
 > dbt-diff markdown
 ```
-A markdown snippet showing the filepaths and the locations of the new models in the database
-Perfect for your PR!
+Make a pretty markdown snippet showing the filepaths and the locations of the branch models in the database. Useful for review, perfect for your PR description.
+
+```sql
+-- models/customers.sql
+desc table dev.analytics_adam_marples.customers;
+select top 10 * from dev.analytics_adam_marples.customers;
+```
+
+
 <details>
 <summary>Example</summary>
 
