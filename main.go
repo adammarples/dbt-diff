@@ -15,12 +15,12 @@ func main() {
 	command := os.Args[1]
 	switch command {
 	case "build":
-		if err := cmd.BuildDiff(); err != nil {
+		if err := cmd.Build(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
 		}
 	case "markdown":
-		if err := cmd.ShowDiff(); err != nil {
+		if err := cmd.Markdown(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
 		}

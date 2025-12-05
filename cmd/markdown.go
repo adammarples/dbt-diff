@@ -6,8 +6,8 @@ import (
 	"os"
 )
 
-// ShowDiff implements the show-diff command
-func ShowDiff() error {
+// Markdown implements the markdown command
+func Markdown() error {
 	// Setup state (compile main and local manifests)
 	stateInfo, err := SetupState()
 	if err != nil {

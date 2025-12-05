@@ -6,8 +6,8 @@ import (
 	"os"
 )
 
-// BuildDiff implements the build-diff command
-func BuildDiff() error {
+// Build implements the build command
+func Build() error {
 	// Setup state (compile main and local manifests)
 	stateInfo, err := SetupState()
 	if err != nil {
