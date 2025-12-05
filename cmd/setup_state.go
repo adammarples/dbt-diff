@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/adammarples/dbt-diff/internal/dbt"
 	"github.com/adammarples/dbt-diff/internal/git"
 	"github.com/adammarples/dbt-diff/internal/state"
-	"os"
 )
 
 // StateInfo contains the paths to compiled manifests
@@ -19,15 +20,15 @@ type StateInfo struct {
 // SetupState ensures both main and local manifests are compiled
 // Returns state info needed for build/show commands
 func SetupState() (*StateInfo, error) {
-	workDir, err := os.Getwd()
+	dbtProjectDir, err := os.Getwd()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get working directory: %w", err)
 	}
 
 	// Initialize components
-	stateMgr := state.New(workDir)
-	gitOps := git.New(workDir)
-	dbtRunner := dbt.New(workDir)
+	stateMgr := state.New(dbtProjectDir)
+	gitOps := git.New(dbtProjectDir)
+	dbtRunner := dbt.New(dbtProjectDir)
 
 	// Validate environment
 	if err := stateMgr.ValidateProjectRoot(); err != nil {
