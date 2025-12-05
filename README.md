@@ -2,11 +2,14 @@
 
 A Go CLI tool for dbt projects that helps build and visualize only your changed models.
 
-Dbt-diff efficiently compares your current working code to you main branch and uses dbt's parser to decide which models have changed. From here, you can build them, or generate markdown docs describing them for a nice PR description to help your coworkers QA them.
+`dbt-diff` efficiently compares your current working code to you main branch by storing manifests in hashed locations inside your target directory for both your main branch HEAD and your working code. Then it uses dbt's parser to decide which models have changed. From here, you can build them, or generate markdown docs describing them for a nice PR description to help your coworkers review them.
 
-The compiled manifests are stored in your target directory under `target/main/<target>/<short_sha>` and `target/local/<target>/<diff_hash>`, where `short_sha` is the short_sha of your main HEAD commit, `diff_sha` is a hash of your git diff from main, and `target` is your dbt profile target. This is required because a different target will build a different manifest.
+The compiled manifests are stored in your target directory under `target/main/<target>/<short_sha>` and `target/local/<target>/<diff_hash>`, where `short_sha` is the short_sha of your main HEAD commit, `diff_sha` is a hash of your git diff from main, and `target` is your dbt profile target.
 
-Currrenty not supported: passing --target-path flags to dbt.
+#### Currrenty not supported: 
+* passing --target-path flags to dbt, assumes working in 'target' dir
+* remotes other than 'origin' and main branches other than 'main'
+* sql dialects other than snowflake in the markdown
 
 ## Installation
 <details>
