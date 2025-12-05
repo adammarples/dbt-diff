@@ -8,17 +8,17 @@ import (
 
 // Manager handles manifest file locations and validation
 type Manager struct {
-	projectRoot string
+	dbtProjectDir string
 }
 
 // New creates a new state manager
-func New(projectRoot string) *Manager {
-	return &Manager{projectRoot: projectRoot}
+func New(dbtProjectDir string) *Manager {
+	return &Manager{dbtProjectDir: dbtProjectDir}
 }
 
 // ValidateProjectRoot checks if dbt_project.yml exists
 func (m *Manager) ValidateProjectRoot() error {
-	dbtProjectFile := filepath.Join(m.projectRoot, "dbt_project.yml")
+	dbtProjectFile := filepath.Join(m.dbtProjectDir, "dbt_project.yml")
 	if _, err := os.Stat(dbtProjectFile); os.IsNotExist(err) {
 		return fmt.Errorf("dbt_project.yml not found in current directory - must run from dbt project root")
 	}
@@ -27,12 +27,12 @@ func (m *Manager) ValidateProjectRoot() error {
 
 // GetMainManifestPath returns the path to the main branch manifest
 func (m *Manager) GetMainManifestPath(shortSha string) string {
-	return filepath.Join(m.projectRoot, "target", "main", shortSha)
+	return filepath.Join(m.dbtProjectDir, "target", "main", shortSha)
 }
 
 // GetLocalManifestPath returns the path to the local changes manifest
 func (m *Manager) GetLocalManifestPath(diffHash string) string {
-	return filepath.Join(m.projectRoot, "target", "local", diffHash)
+	return filepath.Join(m.dbtProjectDir, "target", "local", diffHash)
 }
 
 // ManifestExists checks if a manifest file exists at the given path

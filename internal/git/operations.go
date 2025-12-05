@@ -9,18 +9,18 @@ import (
 
 // Operations handles git operations
 type Operations struct {
-	workDir string
+	dbtProjectDir string
 }
 
 // New creates a new git operations handler
-func New(workDir string) *Operations {
-	return &Operations{workDir: workDir}
+func New(dbtProjectDir string) *Operations {
+	return &Operations{dbtProjectDir: dbtProjectDir}
 }
 
 // GetCurrentBranch returns the name of the current git branch
 func (g *Operations) GetCurrentBranch() (string, error) {
 	cmd := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
-	cmd.Dir = g.workDir
+	cmd.Dir = g.dbtProjectDir
 	output, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to get current branch: %w", err)
@@ -31,7 +31,7 @@ func (g *Operations) GetCurrentBranch() (string, error) {
 // GetDiffHash computes a hash of the diff with origin/main
 func (g *Operations) GetDiffHash() (string, error) {
 	cmd := exec.Command("git", "diff", "origin/main")
-	cmd.Dir = g.workDir
+	cmd.Dir = g.dbtProjectDir
 	output, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to get diff: %w", err)
@@ -44,7 +44,7 @@ func (g *Operations) GetDiffHash() (string, error) {
 // GetShortSHA returns the short SHA of origin/main
 func (g *Operations) GetShortSHA() (string, error) {
 	cmd := exec.Command("git", "rev-parse", "--short", "origin/main")
-	cmd.Dir = g.workDir
+	cmd.Dir = g.dbtProjectDir
 	output, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to get short SHA: %w", err)
@@ -55,7 +55,7 @@ func (g *Operations) GetShortSHA() (string, error) {
 // CreateStash creates a stash with the given name
 func (g *Operations) CreateStash(stashName string) error {
 	cmd := exec.Command("git", "stash", "push", "-m", stashName)
-	cmd.Dir = g.workDir
+	cmd.Dir = g.dbtProjectDir
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to create stash: %w", err)
 	}
@@ -65,7 +65,7 @@ func (g *Operations) CreateStash(stashName string) error {
 // PopStash pops the most recent stash
 func (g *Operations) PopStash() error {
 	cmd := exec.Command("git", "stash", "pop")
-	cmd.Dir = g.workDir
+	cmd.Dir = g.dbtProjectDir
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to pop stash: %w", err)
 	}
@@ -75,7 +75,7 @@ func (g *Operations) PopStash() error {
 // FetchOrigin fetches from origin
 func (g *Operations) FetchOrigin() error {
 	cmd := exec.Command("git", "fetch", "origin", "main")
-	cmd.Dir = g.workDir
+	cmd.Dir = g.dbtProjectDir
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to fetch origin: %w", err)
 	}
@@ -85,7 +85,7 @@ func (g *Operations) FetchOrigin() error {
 // Checkout checks out a ref (branch or commit)
 func (g *Operations) Checkout(ref string) error {
 	cmd := exec.Command("git", "checkout", ref)
-	cmd.Dir = g.workDir
+	cmd.Dir = g.dbtProjectDir
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to checkout %s: %w", ref, err)
 	}
@@ -95,7 +95,7 @@ func (g *Operations) Checkout(ref string) error {
 // StashExists checks if a stash with the given name exists
 func (g *Operations) StashExists(stashName string) (bool, error) {
 	cmd := exec.Command("git", "stash", "list")
-	cmd.Dir = g.workDir
+	cmd.Dir = g.dbtProjectDir
 	output, err := cmd.Output()
 	if err != nil {
 		return false, fmt.Errorf("failed to list stashes: %w", err)
@@ -111,7 +111,7 @@ func (g *Operations) GetStashName(branch, diffHash string) string {
 // IsBehindOriginMain checks if current branch is behind origin/main
 func (g *Operations) IsBehindOriginMain() (bool, error) {
 	cmd := exec.Command("git", "rev-list", "--count", "HEAD..origin/main")
-	cmd.Dir = g.workDir
+	cmd.Dir = g.dbtProjectDir
 	output, err := cmd.Output()
 	if err != nil {
 		return false, fmt.Errorf("failed to check if behind: %w", err)
@@ -124,7 +124,7 @@ func (g *Operations) IsBehindOriginMain() (bool, error) {
 // Rebase rebases current branch onto the given ref
 func (g *Operations) Rebase(ref string) error {
 	cmd := exec.Command("git", "rebase", ref)
-	cmd.Dir = g.workDir
+	cmd.Dir = g.dbtProjectDir
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to rebase onto %s: %w", ref, err)
 	}

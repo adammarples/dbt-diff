@@ -1,10 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/adammarples/dbt-diff/internal/dbt"
 	"github.com/adammarples/dbt-diff/internal/git"
 	"github.com/adammarples/dbt-diff/internal/state"
-	"fmt"
 	"os"
 )
 
@@ -51,36 +51,15 @@ func SetupState() (*StateInfo, error) {
 		return nil, err
 	}
 
-	stashName := gitOps.GetStashName(branch, diffHash)
-
-	// Create cleanup function
-	cleanup := func() {
-		fmt.Println("🧹 Cleaning up...")
-		exists, _ := gitOps.StashExists(stashName)
-		if exists {
-			_ = gitOps.PopStash()
-		}
-		// Return to original branch
-		_ = gitOps.Checkout(branch)
-	}
-
-	// Create stash
-	fmt.Println("📦 Stashing current changes...")
-	if err := gitOps.CreateStash(stashName); err != nil {
-		return nil, fmt.Errorf("failed to stash changes: %w", err)
-	}
-
-	// Fetch origin
+	// Fetch origin (doesn't require clean working directory)
 	fmt.Println("🌐 Fetching origin/main...")
 	if err := gitOps.FetchOrigin(); err != nil {
-		cleanup()
 		return nil, err
 	}
 
 	// Check if behind origin/main
 	behind, err := gitOps.IsBehindOriginMain()
 	if err != nil {
-		cleanup()
 		return nil, err
 	}
 
@@ -94,24 +73,41 @@ func SetupState() (*StateInfo, error) {
 		if response == "y" || response == "Y" {
 			fmt.Println("🔄 Rebasing onto origin/main...")
 			if err := gitOps.Rebase("origin/main"); err != nil {
-				cleanup()
 				return nil, fmt.Errorf("rebase failed: %w - please resolve conflicts and run again", err)
 			}
 			fmt.Println("✅ Rebase complete")
 		}
 	}
 
-	// Get main SHA
+	// Get main SHA (can get this without checking out)
 	mainSha, err := gitOps.GetShortSHA()
 	if err != nil {
-		cleanup()
 		return nil, err
 	}
 
 	mainManifestPath := stateMgr.GetMainManifestPath(mainSha)
 
-	// Compile main if needed
+	// Only stash/checkout if we need to compile main
 	if !stateMgr.ManifestExists(mainManifestPath) {
+		stashName := gitOps.GetStashName(branch, diffHash)
+
+		// Create cleanup function
+		cleanup := func() {
+			fmt.Println("🧹 Cleaning up...")
+			exists, _ := gitOps.StashExists(stashName)
+			if exists {
+				_ = gitOps.PopStash()
+			}
+			// Return to original branch
+			_ = gitOps.Checkout(branch)
+		}
+
+		// Create stash
+		fmt.Println("📦 Stashing current changes...")
+		if err := gitOps.CreateStash(stashName); err != nil {
+			return nil, fmt.Errorf("failed to stash changes: %w", err)
+		}
+
 		fmt.Printf("📝 Compiling origin/main (%s)...\n", mainSha)
 
 		if err := gitOps.Checkout("origin/main"); err != nil {
@@ -131,21 +127,21 @@ func SetupState() (*StateInfo, error) {
 		}
 
 		fmt.Println("✅ Main manifest compiled")
+
+		// Return to original branch
+		fmt.Printf("🔄 Returning to branch %s...\n", branch)
+		if err := gitOps.Checkout(branch); err != nil {
+			cleanup()
+			return nil, err
+		}
+
+		// Apply stash
+		fmt.Println("📤 Applying stashed changes...")
+		if err := gitOps.PopStash(); err != nil {
+			return nil, fmt.Errorf("failed to apply stash: %w", err)
+		}
 	} else {
 		fmt.Printf("✅ Using cached main manifest (%s)\n", mainSha)
-	}
-
-	// Return to original branch
-	fmt.Printf("🔄 Returning to branch %s...\n", branch)
-	if err := gitOps.Checkout(branch); err != nil {
-		cleanup()
-		return nil, err
-	}
-
-	// Apply stash
-	fmt.Println("📤 Applying stashed changes...")
-	if err := gitOps.PopStash(); err != nil {
-		return nil, fmt.Errorf("failed to apply stash: %w", err)
 	}
 
 	// Compile local

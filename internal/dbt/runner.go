@@ -10,29 +10,29 @@ import (
 
 // Runner handles dbt command execution
 type Runner struct {
-	workDir string
+	dbtProjectDir string
 }
 
 // New creates a new dbt runner
-func New(workDir string) *Runner {
-	return &Runner{workDir: workDir}
+func New(dbtProjectDir string) *Runner {
+	return &Runner{dbtProjectDir: dbtProjectDir}
 }
 
 // Model represents a dbt model/test from dbt ls output
 type Model struct {
-	Name          string `json:"name"`
-	ResourceType  string `json:"resource_type"`
-	PackageName   string `json:"package_name"`
-	OriginalPath  string `json:"original_file_path"`
-	Database      string `json:"database"`
-	Schema        string `json:"schema"`
-	Alias         string `json:"alias"`
+	Name         string `json:"name"`
+	ResourceType string `json:"resource_type"`
+	PackageName  string `json:"package_name"`
+	OriginalPath string `json:"original_file_path"`
+	Database     string `json:"database"`
+	Schema       string `json:"schema"`
+	Alias        string `json:"alias"`
 }
 
 // Compile runs dbt compile with the specified target path
 func (r *Runner) Compile(targetPath string) error {
 	cmd := exec.Command("dbt", "compile", "--target-path", targetPath)
-	cmd.Dir = r.workDir
+	cmd.Dir = r.dbtProjectDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -45,7 +45,7 @@ func (r *Runner) Compile(targetPath string) error {
 // Run runs dbt run with state comparison
 func (r *Runner) Run(statePath string) error {
 	cmd := exec.Command("dbt", "run", "--select", "state:modified", "--state", statePath)
-	cmd.Dir = r.workDir
+	cmd.Dir = r.dbtProjectDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -58,7 +58,7 @@ func (r *Runner) Run(statePath string) error {
 // Test runs dbt test with state comparison
 func (r *Runner) Test(statePath string) error {
 	cmd := exec.Command("dbt", "test", "--select", "state:modified", "--state", statePath)
-	cmd.Dir = r.workDir
+	cmd.Dir = r.dbtProjectDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -75,7 +75,7 @@ func (r *Runner) ListModified(statePath string, resourceType string) ([]Model, e
 		args = append(args, "--resource-type", resourceType)
 	}
 	cmd := exec.Command("dbt", args...)
-	cmd.Dir = r.workDir
+	cmd.Dir = r.dbtProjectDir
 
 	output, err := cmd.Output()
 	if err != nil {
