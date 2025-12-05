@@ -19,7 +19,7 @@ type StateInfo struct {
 
 // SetupState ensures both main and local manifests are compiled
 // Returns state info needed for build/show commands
-func SetupState() (*StateInfo, error) {
+func SetupState(dbtOpts dbt.DbtOptions) (*StateInfo, error) {
 	dbtProjectDir, err := os.Getwd()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get working directory: %w", err)
@@ -28,7 +28,7 @@ func SetupState() (*StateInfo, error) {
 	// Initialize components
 	stateMgr := state.New(dbtProjectDir)
 	gitOps := git.New(dbtProjectDir)
-	dbtRunner := dbt.New(dbtProjectDir)
+	dbtRunner := dbt.NewWithOptions(dbtProjectDir, dbtOpts)
 
 	// Validate environment
 	if err := stateMgr.ValidateProjectRoot(); err != nil {
@@ -86,7 +86,7 @@ func SetupState() (*StateInfo, error) {
 		return nil, err
 	}
 
-	mainManifestPath := stateMgr.GetMainManifestPath(mainSha)
+	mainManifestPath := stateMgr.GetMainManifestPath(mainSha, dbtOpts.Target)
 
 	// Only stash/checkout if we need to compile main
 	if !stateMgr.ManifestExists(mainManifestPath) {
@@ -146,7 +146,7 @@ func SetupState() (*StateInfo, error) {
 	}
 
 	// Compile local
-	localManifestPath := stateMgr.GetLocalManifestPath(diffHash)
+	localManifestPath := stateMgr.GetLocalManifestPath(diffHash, dbtOpts.Target)
 
 	if !stateMgr.ManifestExists(localManifestPath) {
 		fmt.Printf("📝 Compiling local changes (%s)...\n", diffHash[:8])

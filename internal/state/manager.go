@@ -26,13 +26,19 @@ func (m *Manager) ValidateProjectRoot() error {
 }
 
 // GetMainManifestPath returns the path to the main branch manifest
-func (m *Manager) GetMainManifestPath(shortSha string) string {
-	return filepath.Join(m.dbtProjectDir, "target", "main", shortSha)
+func (m *Manager) GetMainManifestPath(shortSha string, target string) string {
+	if target == "" {
+		target = "default"
+	}
+	return filepath.Join(m.dbtProjectDir, "target", "main", target, shortSha)
 }
 
 // GetLocalManifestPath returns the path to the local changes manifest
-func (m *Manager) GetLocalManifestPath(diffHash string) string {
-	return filepath.Join(m.dbtProjectDir, "target", "local", diffHash)
+func (m *Manager) GetLocalManifestPath(diffHash string, target string) string {
+	if target == "" {
+		target = "default"
+	}
+	return filepath.Join(m.dbtProjectDir, "target", "local", target, diffHash)
 }
 
 // ManifestExists checks if a manifest file exists at the given path

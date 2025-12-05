@@ -7,9 +7,9 @@ import (
 )
 
 // Markdown implements the markdown command
-func Markdown() error {
+func Markdown(dbtOpts dbt.DbtOptions) error {
 	// Setup state (compile main and local manifests)
-	stateInfo, err := SetupState()
+	stateInfo, err := SetupState(dbtOpts)
 	if err != nil {
 		return err
 	}
@@ -19,7 +19,7 @@ func Markdown() error {
 		return fmt.Errorf("failed to get working directory: %w", err)
 	}
 
-	dbtRunner := dbt.New(workDir)
+	dbtRunner := dbt.NewWithOptions(workDir, dbtOpts)
 
 	// Get modified models only
 	models, err := dbtRunner.ListModified(stateInfo.MainManifestPath, "model")

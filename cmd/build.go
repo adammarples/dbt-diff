@@ -7,9 +7,9 @@ import (
 )
 
 // Build implements the build command
-func Build() error {
+func Build(dbtOpts dbt.DbtOptions) error {
 	// Setup state (compile main and local manifests)
-	stateInfo, err := SetupState()
+	stateInfo, err := SetupState(dbtOpts)
 	if err != nil {
 		return err
 	}
@@ -19,7 +19,7 @@ func Build() error {
 		return fmt.Errorf("failed to get working directory: %w", err)
 	}
 
-	dbtRunner := dbt.New(workDir)
+	dbtRunner := dbt.NewWithOptions(workDir, dbtOpts)
 
 	// Run modified models
 	fmt.Println("🏗️  Running modified models...")

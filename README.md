@@ -56,6 +56,61 @@ go build -o dbt-diff
 sudo mv dbt-diff /usr/local/bin/
 ```
 
+## dbt Arguments
+
+`dbt-diff` supports passing common dbt arguments to the underlying dbt commands. These flags are available on both `build` and `markdown` commands.
+
+### Supported Flags
+
+| Flag | Description | Affects Manifest | Example |
+|------|-------------|------------------|---------|
+| `--target` | dbt target environment | ✅ Yes | `--target prod` |
+| `--vars` | Variables passed to dbt | ⚠️ User responsibility | `--vars '{"key":"value"}'` |
+| `--threads` | Number of threads | ❌ No | `--threads 4` |
+| `--profiles-dir` | Custom profiles directory | ⚠️ User responsibility | `--profiles-dir ~/.dbt` |
+
+### How Flags Affect Manifest Paths
+
+**The `--target` flag changes where manifests are stored:**
+
+```bash
+# Without --target (uses "default")
+target/main/default/8508f09/
+target/local/default/0f035aab/
+
+# With --target prod
+target/main/prod/8508f09/
+target/local/prod/0f035aab/
+
+# With --target dev
+target/main/dev/8508f09/
+target/local/dev/0f035aab/
+```
+
+This is necessary because different targets compile to different databases/schemas. Running with `--target prod` produces a different manifest than `--target dev`.
+
+**Other flags (`--vars`, `--threads`, `--profiles-dir`)** are passed through to dbt commands but **do not affect manifest paths**. This means:
+
+- ⚠️ **`--vars`**: If your vars affect compilation, you must use consistent vars for a given target, or manually clear manifests when changing vars
+- ✅ **`--threads`**: Safe to change - only affects runtime performance, not manifest content
+- ⚠️ **`--profiles-dir`**: If different profiles have different target configurations, use consistent profiles or manually manage manifests
+
+### Examples
+
+```bash
+# Build with production target
+dbt-diff build --target prod
+
+# Generate markdown with custom vars
+dbt-diff markdown --target dev --vars '{"start_date": "2024-01-01"}'
+
+# Use more threads for faster builds
+dbt-diff build --target prod --threads 8
+
+# Custom profiles directory
+dbt-diff build --profiles-dir ~/.dbt-custom
+```
+
 ## Usage
 
 Must be run from the root of your dbt project (where `dbt_project.yml` exists).

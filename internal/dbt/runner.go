@@ -5,17 +5,38 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 )
+
+// DbtOptions contains optional dbt CLI flags
+type DbtOptions struct {
+	Target      string
+	Vars        string
+	Threads     int
+	ProfilesDir string
+}
 
 // Runner handles dbt command execution
 type Runner struct {
 	dbtProjectDir string
+	dbtOptions    DbtOptions
 }
 
-// New creates a new dbt runner
+// New creates a new dbt runner with default options
 func New(dbtProjectDir string) *Runner {
-	return &Runner{dbtProjectDir: dbtProjectDir}
+	return &Runner{
+		dbtProjectDir: dbtProjectDir,
+		dbtOptions:    DbtOptions{},
+	}
+}
+
+// NewWithOptions creates a new dbt runner with specified options
+func NewWithOptions(dbtProjectDir string, opts DbtOptions) *Runner {
+	return &Runner{
+		dbtProjectDir: dbtProjectDir,
+		dbtOptions:    opts,
+	}
 }
 
 // Model represents a dbt model/test from dbt ls output
@@ -29,9 +50,29 @@ type Model struct {
 	Alias        string `json:"alias"`
 }
 
+// buildDbtArgs appends dbt options to base arguments
+func (r *Runner) buildDbtArgs(baseArgs []string) []string {
+	args := baseArgs
+	if r.dbtOptions.Target != "" {
+		args = append(args, "--target", r.dbtOptions.Target)
+	}
+	if r.dbtOptions.Vars != "" {
+		args = append(args, "--vars", r.dbtOptions.Vars)
+	}
+	if r.dbtOptions.Threads > 0 {
+		args = append(args, "--threads", strconv.Itoa(r.dbtOptions.Threads))
+	}
+	if r.dbtOptions.ProfilesDir != "" {
+		args = append(args, "--profiles-dir", r.dbtOptions.ProfilesDir)
+	}
+	return args
+}
+
 // Compile runs dbt compile with the specified target path
 func (r *Runner) Compile(targetPath string) error {
-	cmd := exec.Command("dbt", "compile", "--target-path", targetPath)
+	baseArgs := []string{"compile", "--target-path", targetPath}
+	args := r.buildDbtArgs(baseArgs)
+	cmd := exec.Command("dbt", args...)
 	cmd.Dir = r.dbtProjectDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -44,7 +85,9 @@ func (r *Runner) Compile(targetPath string) error {
 
 // Run runs dbt run with state comparison
 func (r *Runner) Run(statePath string) error {
-	cmd := exec.Command("dbt", "run", "--select", "state:modified", "--state", statePath)
+	baseArgs := []string{"run", "--select", "state:modified", "--state", statePath}
+	args := r.buildDbtArgs(baseArgs)
+	cmd := exec.Command("dbt", args...)
 	cmd.Dir = r.dbtProjectDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -57,7 +100,9 @@ func (r *Runner) Run(statePath string) error {
 
 // Test runs dbt test with state comparison
 func (r *Runner) Test(statePath string) error {
-	cmd := exec.Command("dbt", "test", "--select", "state:modified", "--state", statePath)
+	baseArgs := []string{"test", "--select", "state:modified", "--state", statePath}
+	args := r.buildDbtArgs(baseArgs)
+	cmd := exec.Command("dbt", args...)
 	cmd.Dir = r.dbtProjectDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -70,10 +115,11 @@ func (r *Runner) Test(statePath string) error {
 
 // ListModified returns a list of modified resources compared to the state
 func (r *Runner) ListModified(statePath string, resourceType string) ([]Model, error) {
-	args := []string{"ls", "--select", "state:modified", "--state", statePath, "--output", "json"}
+	baseArgs := []string{"ls", "--select", "state:modified", "--state", statePath, "--output", "json"}
 	if resourceType != "" {
-		args = append(args, "--resource-type", resourceType)
+		baseArgs = append(baseArgs, "--resource-type", resourceType)
 	}
+	args := r.buildDbtArgs(baseArgs)
 	cmd := exec.Command("dbt", args...)
 	cmd.Dir = r.dbtProjectDir
 
