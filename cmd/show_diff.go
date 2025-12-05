@@ -2,50 +2,27 @@ package cmd
 
 import (
 	"dbt-diff/internal/dbt"
-	"dbt-diff/internal/git"
-	"dbt-diff/internal/state"
 	"fmt"
 	"os"
 )
 
 // ShowDiff implements the show-diff command
 func ShowDiff() error {
+	// Setup state (compile main and local manifests)
+	stateInfo, err := SetupState()
+	if err != nil {
+		return err
+	}
+
 	workDir, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("failed to get working directory: %w", err)
 	}
 
-	// Initialize components
-	stateMgr := state.New(workDir)
-	gitOps := git.New(workDir)
 	dbtRunner := dbt.New(workDir)
 
-	// Validate environment
-	if err := stateMgr.ValidateProjectRoot(); err != nil {
-		return err
-	}
-
-	if err := dbt.CheckDbtInstalled(); err != nil {
-		return err
-	}
-
-	// Get main SHA for state path
-	mainSha, err := gitOps.GetShortSHA()
-	if err != nil {
-		return err
-	}
-
-	mainManifestPath := stateMgr.GetMainManifestPath(mainSha)
-
-	// Check if manifests exist
-	if !stateMgr.ManifestExists(mainManifestPath) {
-		return fmt.Errorf("main manifest not found at %s - run 'dbt-diff build-diff' first", mainManifestPath)
-	}
-
-	fmt.Println("🔍 Analyzing changes...")
-
 	// Get modified models only
-	models, err := dbtRunner.ListModified(mainManifestPath, "model")
+	models, err := dbtRunner.ListModified(stateInfo.MainManifestPath, "model")
 	if err != nil {
 		return err
 	}
