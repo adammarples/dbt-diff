@@ -4,13 +4,36 @@ A Go CLI tool that helps compare dbt project states between your current branch 
 
 ## Installation
 
-### Using go install (recommended)
+### Download pre-built binary (easiest)
+
+Download the latest release for your platform from the [releases page](https://github.com/adammarples/dbt-diff/releases):
+
+**macOS (Apple Silicon):**
+```bash
+curl -L https://github.com/adammarples/dbt-diff/releases/latest/download/dbt-diff-darwin-arm64.tar.gz | tar xz
+sudo mv dbt-diff-darwin-arm64 /usr/local/bin/dbt-diff
+```
+
+**macOS (Intel):**
+```bash
+curl -L https://github.com/adammarples/dbt-diff/releases/latest/download/dbt-diff-darwin-amd64.tar.gz | tar xz
+sudo mv dbt-diff-darwin-amd64 /usr/local/bin/dbt-diff
+```
+
+**Linux (AMD64):**
+```bash
+curl -L https://github.com/adammarples/dbt-diff/releases/latest/download/dbt-diff-linux-amd64.tar.gz | tar xz
+sudo mv dbt-diff-linux-amd64 /usr/local/bin/dbt-diff
+```
+
+**Windows:**
+Download `dbt-diff-windows-amd64.zip` from releases and add to PATH.
+
+### Using go install (if you have Go installed)
 
 ```bash
 go install github.com/adammarples/dbt-diff@latest
 ```
-
-This installs the binary to `$GOPATH/bin` (usually `~/go/bin`). Make sure this is in your PATH.
 
 ### From source
 
@@ -18,8 +41,7 @@ This installs the binary to `$GOPATH/bin` (usually `~/go/bin`). Make sure this i
 git clone https://github.com/adammarples/dbt-diff
 cd dbt-diff
 go build -o dbt-diff
-# Move to somewhere in your PATH
-mv dbt-diff /usr/local/bin/
+sudo mv dbt-diff /usr/local/bin/
 ```
 
 ## Usage
