@@ -1,6 +1,18 @@
 # dbt-diff
 
-A Go CLI tool that helps compare dbt project states between your current branch and `origin/main`, enabling targeted builds and change visualization.
+A Go CLI tool for dbt projects that helps build and visualize only your changed models
+
+## Commands
+
+```bash
+> dbt-diff build
+
+```
+
+```bash
+> dbt-diff markdown
+
+```
 
 ## Installation
 
@@ -51,7 +63,36 @@ Must be run from the root of your dbt project (where `dbt_project.yml` exists).
 ### Build Changed Models
 
 ```bash
-dbt-diff build
+> dbt-diff build
+🔍 Analyzing changes...
+📦 Stashing current changes...
+🌐 Fetching origin/main...
+✅ Using cached main manifest (8508f09)
+🔄 Returning to branch feature/add-orders...
+📤 Applying stashed changes...
+✅ Using cached local manifest (0f035aab)
+🏗️  Running modified models...
+14:36:43  Running with dbt=1.10.15
+14:36:44  Registered adapter: duckdb=1.10.0
+14:36:44  Found 2 models, 468 macros
+14:36:44  
+14:36:44  Concurrency: 1 threads (target='dev')
+14:36:44  
+14:36:44  1 of 1 START sql table model main.customers .................................... [RUN]
+14:36:44  1 of 1 OK created sql table model main.customers ............................... [OK in 0.09s]
+14:36:44  
+14:36:44  Finished running 1 table model in 0 hours 0 minutes and 0.19 seconds (0.19s).
+14:36:44  
+14:36:44  Completed successfully
+14:36:44  
+14:36:44  Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=1
+✅ Models run complete!
+🧪 Testing modified models...
+14:36:45  Running with dbt=1.10.15
+14:36:46  Registered adapter: duckdb=1.10.0
+14:36:46  Found 2 models, 468 macros
+14:36:46  Nothing to do. Try checking your model configs and model specification args
+✅ Tests complete!
 ```
 
 This command:
@@ -62,21 +103,28 @@ This command:
 5. Runs `dbt run` on modified models
 6. Runs `dbt test` on modified models
 
-### Generate SQL Snippets
+If target/main/{sha} or target/local/{diff-hash} already exist, no re-compilation is necessary.
 
-```bash
-dbt-diff markdown
-```
+### Generate Markdown Snippets for PR descriptions
 
-Displays SQL snippets for inspecting changed models:
+Sometimesthe level of indirection in a sdbt project can make it hard to know where your models actually materialized
+
+````bash
+> dbt-diff markdown
+🔍 Analyzing changes...
+📦 Stashing current changes...
+🌐 Fetching origin/main...
+✅ Using cached main manifest (8508f09)
+🔄 Returning to branch feature/add-orders...
+📤 Applying stashed changes...
+✅ Using cached local manifest (0f035aab)
 
 ```sql
 -- models/customers.sql
 desc table prod.analytics.customers;
 select top 10 * from prod.analytics.customers;
 ```
-
-Ready to copy/paste into your SQL editor!
+````
 
 ## How It Works
 
@@ -94,14 +142,6 @@ Ready to copy/paste into your SQL editor!
 - `git` in PATH
 - `dbt` in PATH (with appropriate adapter for your warehouse)
 
-## Features
-
-- 🚀 **Fast**: Caches manifests - only compiles when code changes
-- 🔒 **Safe**: Auto-stashes changes and restores on errors
-- 🔄 **Smart**: Prompts to rebase when behind origin/main
-- 📝 **Helpful**: Generates SQL snippets for inspecting changes
-- ⚡ **Efficient**: Only builds/tests what actually changed
-
 ## Example Workflow
 
 ```bash
@@ -111,15 +151,9 @@ git checkout -b feature/new-models
 # Make changes to dbt models
 vim models/customers.sql
 
-# Generate SQL snippets for inspection
-dbt-diff markdown
-
 # Build and test only the changes
 dbt-diff build
 
-# If prompted, optionally rebase onto latest main
+# Generate SQL snippets for inspection
+dbt-diff markdown
 ```
-
-## License
-
-MIT
