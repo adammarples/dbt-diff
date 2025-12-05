@@ -4,11 +4,23 @@ A Go CLI tool that helps compare dbt project states between your current branch 
 
 ## Installation
 
+### Using go install (recommended)
+
 ```bash
-just install
+go install github.com/adammarples/dbt-diff@latest
 ```
 
-This will build and install the binary to `~/.local/bin/dbt-diff`.
+This installs the binary to `$GOPATH/bin` (usually `~/go/bin`). Make sure this is in your PATH.
+
+### From source
+
+```bash
+git clone https://github.com/adammarples/dbt-diff
+cd dbt-diff
+go build -o dbt-diff
+# Move to somewhere in your PATH
+mv dbt-diff /usr/local/bin/
+```
 
 ## Usage
 
@@ -23,8 +35,10 @@ dbt-diff build-diff
 This command:
 1. Stashes your current changes
 2. Fetches and compiles `origin/main` to `target/main/{sha}`
-3. Compiles your local changes to `target/local/{diff-hash}`
-4. Runs `dbt build --select state:modified` to build only changed models
+3. **Prompts to rebase if your branch is behind origin/main**
+4. Compiles your local changes to `target/local/{diff-hash}`
+5. Runs `dbt run` on modified models
+6. Runs `dbt test` on modified models
 
 ### Show Changes
 
@@ -32,7 +46,15 @@ This command:
 dbt-diff show-diff
 ```
 
-Displays what models, tests, and other resources have changed compared to `origin/main`, grouped by type and directory.
+Displays SQL snippets for inspecting changed models:
+
+```sql
+-- models/customers.sql
+desc table prod.analytics.customers;
+select top 10 * from prod.analytics.customers;
+```
+
+Ready to copy/paste into your SQL editor!
 
 ## How It Works
 
@@ -41,44 +63,41 @@ Displays what models, tests, and other resources have changed compared to `origi
 - Creates unique manifest directories based on git SHAs and diff hashes
 - Safely manages git state with automatic stashing and cleanup
 - Caches compiled manifests to avoid recompilation
+- Provides rebase prompts when your branch is behind main
 - Provides clear error handling with automatic state restoration
-
-## Development
-
-### Build
-
-```bash
-just build
-```
-
-Builds the binary to `bin/dbt-diff`.
-
-### Test
-
-```bash
-just test
-```
-
-Runs all tests.
-
-### Clean
-
-```bash
-just clean
-```
-
-Removes build artifacts and generated manifest directories.
-
-### Inspect
-
-```bash
-just inspect
-```
-
-Shows project information, dependencies, and build status.
 
 ## Requirements
 
-- Go 1.21+
+- Go 1.21+ (for installation)
 - `git` in PATH
-- `dbt` in PATH
+- `dbt` in PATH (with appropriate adapter for your warehouse)
+
+## Features
+
+- 🚀 **Fast**: Caches manifests - only compiles when code changes
+- 🔒 **Safe**: Auto-stashes changes and restores on errors
+- 🔄 **Smart**: Prompts to rebase when behind origin/main
+- 📝 **Helpful**: Generates SQL snippets for inspecting changes
+- ⚡ **Efficient**: Only builds/tests what actually changed
+
+## Example Workflow
+
+```bash
+# Work on your feature branch
+git checkout -b feature/new-models
+
+# Make changes to dbt models
+vim models/customers.sql
+
+# See what changed
+dbt-diff show-diff
+
+# Build and test only the changes
+dbt-diff build-diff
+
+# If prompted, optionally rebase onto latest main
+```
+
+## License
+
+MIT
