@@ -14,12 +14,12 @@ func main() {
 
 	command := os.Args[1]
 	switch command {
-	case "build-diff":
+	case "build":
 		if err := cmd.BuildDiff(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
 		}
-	case "show-diff":
+	case "markdown":
 		if err := cmd.ShowDiff(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
@@ -37,9 +37,9 @@ func printUsage() {
 	fmt.Println("dbt-diff - Compare and build dbt project changes")
 	fmt.Println()
 	fmt.Println("Usage:")
-	fmt.Println("  dbt-diff build-diff    Build models that changed compared to origin/main")
-	fmt.Println("  dbt-diff show-diff     Show what models/tests have changed")
-	fmt.Println("  dbt-diff help          Show this help message")
+	fmt.Println("  dbt-diff build       Build models that changed compared to origin/main")
+	fmt.Println("  dbt-diff markdown    Generate SQL snippets for inspecting changed models")
+	fmt.Println("  dbt-diff help        Show this help message")
 	fmt.Println()
 	fmt.Println("Must be run from the root of a dbt project (where dbt_project.yml exists)")
 }

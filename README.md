@@ -51,7 +51,7 @@ Must be run from the root of your dbt project (where `dbt_project.yml` exists).
 ### Build Changed Models
 
 ```bash
-dbt-diff build-diff
+dbt-diff build
 ```
 
 This command:
@@ -62,10 +62,10 @@ This command:
 5. Runs `dbt run` on modified models
 6. Runs `dbt test` on modified models
 
-### Show Changes
+### Generate SQL Snippets
 
 ```bash
-dbt-diff show-diff
+dbt-diff markdown
 ```
 
 Displays SQL snippets for inspecting changed models:
@@ -111,11 +111,11 @@ git checkout -b feature/new-models
 # Make changes to dbt models
 vim models/customers.sql
 
-# See what changed
-dbt-diff show-diff
+# Generate SQL snippets for inspection
+dbt-diff markdown
 
 # Build and test only the changes
-dbt-diff build-diff
+dbt-diff build
 
 # If prompted, optionally rebase onto latest main
 ```
