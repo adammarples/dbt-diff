@@ -69,7 +69,7 @@ func SetupState() (*StateInfo, error) {
 		fmt.Print("Would you like to rebase onto origin/main before continuing? (y/N): ")
 
 		var response string
-		fmt.Scanln(&response)
+		_, _ = fmt.Scanln(&response)
 
 		if response == "y" || response == "Y" {
 			fmt.Println("🔄 Rebasing onto origin/main...")
@@ -123,7 +123,7 @@ func SetupState() (*StateInfo, error) {
 
 		if err := dbtRunner.Compile(mainManifestPath); err != nil {
 			cleanup()
-			stateMgr.RemovePartialManifest(mainManifestPath)
+			_ = stateMgr.RemovePartialManifest(mainManifestPath)
 			return nil, err
 		}
 
@@ -156,7 +156,7 @@ func SetupState() (*StateInfo, error) {
 		}
 
 		if err := dbtRunner.Compile(localManifestPath); err != nil {
-			stateMgr.RemovePartialManifest(localManifestPath)
+			_ = stateMgr.RemovePartialManifest(localManifestPath)
 			return nil, err
 		}
 
