@@ -9,7 +9,7 @@ import (
 	"github.com/adammarples/dbt-diff/internal/dbt"
 )
 
-const version = "0.5.0"
+const version = "0.6.1"
 
 func main() {
 	if len(os.Args) < 2 {
