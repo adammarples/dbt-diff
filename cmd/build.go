@@ -1,14 +1,14 @@
 package cmd
 
 import (
-	"github.com/adammarples/dbt-diff/internal/dbt"
 	"fmt"
 	"os"
+
+	"github.com/adammarples/dbt-diff/internal/dbt"
 )
 
-// Build implements the build command
 func Build(dbtOpts dbt.DbtOptions) error {
-	// Setup state (compile main and local manifests)
+
 	stateInfo, err := SetupState(dbtOpts)
 	if err != nil {
 		return err
@@ -21,7 +21,6 @@ func Build(dbtOpts dbt.DbtOptions) error {
 
 	dbtRunner := dbt.NewWithOptions(workDir, dbtOpts)
 
-	// Run modified models
 	fmt.Println("🏗️  Running modified models...")
 	if err := dbtRunner.Run(stateInfo.MainManifestPath); err != nil {
 		return fmt.Errorf("run failed: %w", err)
@@ -29,7 +28,6 @@ func Build(dbtOpts dbt.DbtOptions) error {
 
 	fmt.Println("✅ Models run complete!")
 
-	// Test modified models
 	fmt.Println("🧪 Testing modified models...")
 	if err := dbtRunner.Test(stateInfo.MainManifestPath); err != nil {
 		return fmt.Errorf("test failed: %w", err)

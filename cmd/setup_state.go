@@ -9,56 +9,33 @@ import (
 	"github.com/adammarples/dbt-diff/internal/state"
 )
 
-// StateInfo contains the paths to compiled manifests
 type StateInfo struct {
 	MainManifestPath string
 	MainSha          string
-	DiffHash         string
 }
 
-// SetupState ensures main manifest is compiled for state comparison
-// Returns state info needed for build/show commands
-// Note: Local manifest is compiled on-the-fly by dbt commands
 func SetupState(dbtOpts dbt.DbtOptions) (*StateInfo, error) {
 	dbtProjectDir, err := os.Getwd()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get working directory: %w", err)
 	}
 
-	// Initialize components
 	stateMgr := state.New(dbtProjectDir)
 	gitOps := git.New(dbtProjectDir)
 	dbtRunner := dbt.NewWithOptions(dbtProjectDir, dbtOpts)
 
-	// Validate environment
 	if err := stateMgr.ValidateProjectRoot(); err != nil {
 		return nil, err
 	}
-
 	if err := dbt.CheckDbtInstalled(); err != nil {
 		return nil, err
 	}
 
-	fmt.Println("🔍 Analyzing changes...")
-
-	// Get git information
-	branch, err := gitOps.GetCurrentBranch()
-	if err != nil {
-		return nil, err
-	}
-
-	diffHash, err := gitOps.GetDiffHash()
-	if err != nil {
-		return nil, err
-	}
-
-	// Fetch origin (doesn't require clean working directory)
 	fmt.Println("🌐 Fetching origin/main...")
 	if err := gitOps.FetchOrigin(); err != nil {
 		return nil, err
 	}
 
-	// Check if behind origin/main
 	behind, err := gitOps.IsBehindOriginMain()
 	if err != nil {
 		return nil, err
@@ -80,7 +57,6 @@ func SetupState(dbtOpts dbt.DbtOptions) (*StateInfo, error) {
 		}
 	}
 
-	// Get main SHA (can get this without checking out)
 	mainSha, err := gitOps.GetShortSHA()
 	if err != nil {
 		return nil, err
@@ -88,26 +64,26 @@ func SetupState(dbtOpts dbt.DbtOptions) (*StateInfo, error) {
 
 	mainManifestPath := stateMgr.GetMainManifestPath(mainSha, dbtOpts.Target)
 
-	// Only stash/checkout if we need to compile main
+	// Only stash/checkout if we need to pull and compile main
 	if !stateMgr.ManifestExists(mainManifestPath) {
-		stashName := gitOps.GetStashName(branch, diffHash)
+		// Track whether we created a stash
+		var stashCreated bool
 
 		// Create cleanup function
 		cleanup := func() {
 			fmt.Println("🧹 Cleaning up...")
-			exists, _ := gitOps.StashExists(stashName)
-			if exists {
+			if stashCreated {
 				_ = gitOps.PopStash()
 			}
-			// Return to original branch
-			_ = gitOps.Checkout(branch)
+			// Return to previous branch
+			_ = gitOps.Checkout("-")
 		}
 
-		// Create stash
 		fmt.Println("📦 Stashing current changes...")
-		if err := gitOps.CreateStash(stashName); err != nil {
+		if err := gitOps.CreateStash(); err != nil {
 			return nil, fmt.Errorf("failed to stash changes: %w", err)
 		}
+		stashCreated = true
 
 		fmt.Printf("📝 Compiling origin/main (%s)...\n", mainSha)
 
@@ -129,9 +105,9 @@ func SetupState(dbtOpts dbt.DbtOptions) (*StateInfo, error) {
 
 		fmt.Println("✅ Main manifest compiled")
 
-		// Return to original branch
-		fmt.Printf("🔄 Returning to branch %s...\n", branch)
-		if err := gitOps.Checkout(branch); err != nil {
+		// Return to previous branch
+		fmt.Println("🔄 Returning to previous branch...")
+		if err := gitOps.Checkout("-"); err != nil {
 			cleanup()
 			return nil, err
 		}
@@ -148,6 +124,5 @@ func SetupState(dbtOpts dbt.DbtOptions) (*StateInfo, error) {
 	return &StateInfo{
 		MainManifestPath: mainManifestPath,
 		MainSha:          mainSha,
-		DiffHash:         diffHash,
 	}, nil
 }
