@@ -24,6 +24,15 @@ func (g *Operations) GetShortSHA() (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
+func (g *Operations) AddAll() error {
+	cmd := exec.Command("git", "add", ".")
+	cmd.Dir = g.dbtProjectDir
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to add files: %w", err)
+	}
+	return nil
+}
+
 func (g *Operations) CreateStash() error {
 	cmd := exec.Command("git", "stash", "push")
 	cmd.Dir = g.dbtProjectDir

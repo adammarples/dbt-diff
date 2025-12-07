@@ -80,6 +80,9 @@ func SetupState(dbtOpts dbt.DbtOptions) (*StateInfo, error) {
 		}
 
 		fmt.Println("📦 Stashing current changes...")
+		if err := gitOps.AddAll(); err != nil {
+			return nil, fmt.Errorf("failed to add files: %w", err)
+		}
 		if err := gitOps.CreateStash(); err != nil {
 			return nil, fmt.Errorf("failed to stash changes: %w", err)
 		}
