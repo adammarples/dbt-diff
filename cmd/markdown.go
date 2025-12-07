@@ -8,7 +8,7 @@ import (
 
 // Markdown implements the markdown command
 func Markdown(dbtOpts dbt.DbtOptions) error {
-	// Setup state (compile main and local manifests)
+	// Setup state (compile main manifest for state comparison)
 	stateInfo, err := SetupState(dbtOpts)
 	if err != nil {
 		return err

@@ -11,14 +11,14 @@ import (
 
 // StateInfo contains the paths to compiled manifests
 type StateInfo struct {
-	MainManifestPath  string
-	LocalManifestPath string
-	MainSha           string
-	DiffHash          string
+	MainManifestPath string
+	MainSha          string
+	DiffHash         string
 }
 
-// SetupState ensures both main and local manifests are compiled
+// SetupState ensures main manifest is compiled for state comparison
 // Returns state info needed for build/show commands
+// Note: Local manifest is compiled on-the-fly by dbt commands
 func SetupState(dbtOpts dbt.DbtOptions) (*StateInfo, error) {
 	dbtProjectDir, err := os.Getwd()
 	if err != nil {
@@ -145,30 +145,9 @@ func SetupState(dbtOpts dbt.DbtOptions) (*StateInfo, error) {
 		fmt.Printf("✅ Using cached main manifest (%s)\n", mainSha)
 	}
 
-	// Compile local
-	localManifestPath := stateMgr.GetLocalManifestPath(diffHash, dbtOpts.Target)
-
-	if !stateMgr.ManifestExists(localManifestPath) {
-		fmt.Printf("📝 Compiling local changes (%s)...\n", diffHash[:8])
-
-		if err := stateMgr.EnsureTargetDir(localManifestPath); err != nil {
-			return nil, err
-		}
-
-		if err := dbtRunner.Compile(localManifestPath); err != nil {
-			_ = stateMgr.RemovePartialManifest(localManifestPath)
-			return nil, err
-		}
-
-		fmt.Println("✅ Local manifest compiled")
-	} else {
-		fmt.Printf("✅ Using cached local manifest (%s)\n", diffHash[:8])
-	}
-
 	return &StateInfo{
-		MainManifestPath:  mainManifestPath,
-		LocalManifestPath: localManifestPath,
-		MainSha:           mainSha,
-		DiffHash:          diffHash,
+		MainManifestPath: mainManifestPath,
+		MainSha:          mainSha,
+		DiffHash:         diffHash,
 	}, nil
 }

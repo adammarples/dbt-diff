@@ -33,14 +33,6 @@ func (m *Manager) GetMainManifestPath(shortSha string, target string) string {
 	return filepath.Join(m.dbtProjectDir, "target", "main", target, shortSha)
 }
 
-// GetLocalManifestPath returns the path to the local changes manifest
-func (m *Manager) GetLocalManifestPath(diffHash string, target string) string {
-	if target == "" {
-		target = "default"
-	}
-	return filepath.Join(m.dbtProjectDir, "target", "local", target, diffHash)
-}
-
 // ManifestExists checks if a manifest file exists at the given path
 func (m *Manager) ManifestExists(manifestPath string) bool {
 	manifestFile := filepath.Join(manifestPath, "manifest.json")
