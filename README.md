@@ -74,33 +74,41 @@ Run and test only the models that you've changed from your main branch
 
 ```bash
 > dbt-diff build
-🔍 Analyzing changes...
-📦 Stashing current changes...
 🌐 Fetching origin/main...
-✅ Using cached main manifest (8508f09)
-🔄 Returning to branch feature/add-orders...
+📦 Stashing current changes...
+📝 Compiling origin/main (8508f09)...
+23:53:33  Running with dbt=1.10.15
+23:53:33  Registered adapter: duckdb=1.10.0
+23:53:33  Unable to do partial parsing because saved manifest not found. Starting full parse.
+23:53:34  Found 1 model, 468 macros
+23:53:34  
+23:53:34  Concurrency: 1 threads (target='dev')
+23:53:34  
+✅ Main manifest compiled
+🔄 Returning to previous branch...
 📤 Applying stashed changes...
 🏗️  Running modified models...
-14:36:43  Running with dbt=1.10.15
-14:36:44  Registered adapter: duckdb=1.10.0
-14:36:44  Found 2 models, 468 macros
-14:36:44  
-14:36:44  Concurrency: 1 threads (target='dev')
-14:36:44  
-14:36:44  1 of 1 START sql table model main.customers .................................... [RUN]
-14:36:44  1 of 1 OK created sql table model main.customers ............................... [OK in 0.09s]
-14:36:44  
-14:36:44  Finished running 1 table model in 0 hours 0 minutes and 0.19 seconds (0.19s).
-14:36:44  
-14:36:44  Completed successfully
-14:36:44  
-14:36:44  Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=1
+23:53:35  Running with dbt=1.10.15
+23:53:35  Registered adapter: duckdb=1.10.0
+23:53:35  Unable to do partial parsing because saved manifest not found. Starting full parse.
+23:53:36  Found 2 models, 468 macros
+23:53:36  
+23:53:36  Concurrency: 1 threads (target='dev')
+23:53:36  
+23:53:36  1 of 1 START sql table model main.orders ....................................... [RUN]
+23:53:36  1 of 1 OK created sql table model main.orders .................................. [OK in 0.04s]
+23:53:36  
+23:53:36  Finished running 1 table model in 0 hours 0 minutes and 0.10 seconds (0.10s).
+23:53:36  
+23:53:36  Completed successfully
+23:53:36  
+23:53:36  Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=1
 ✅ Models run complete!
 🧪 Testing modified models...
-14:36:45  Running with dbt=1.10.15
-14:36:46  Registered adapter: duckdb=1.10.0
-14:36:46  Found 2 models, 468 macros
-14:36:46  Nothing to do. Try checking your model configs and model specification args
+23:53:38  Running with dbt=1.10.15
+23:53:38  Registered adapter: duckdb=1.10.0
+23:53:38  Found 2 models, 468 macros
+23:53:38  Nothing to do. Try checking your model configs and model specification args
 ✅ Tests complete!
 ```
 
@@ -134,15 +142,15 @@ Sometimes the level of indirection in a dbt project can make it hard to know whe
 
 ````bash
 > dbt-diff markdown
-🔍 Analyzing changes...
 🌐 Fetching origin/main...
 ✅ Using cached main manifest (8508f09)
 
 ```sql
--- models/customers.sql
-desc table prod.analytics.customers;
-select top 10 * from prod.analytics.customers;
+-- models/orders.sql
+desc table orders;
+select top 10 * from orders;
 ```
+
 ````
 
 ## How It Works
